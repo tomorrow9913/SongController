@@ -2,7 +2,7 @@ from datetime import timedelta, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from jose import jwt, JWTError
+from jose import jwt
 from sqlalchemy.orm import Session
 from starlette import status
 from starlette.config import Config
@@ -11,8 +11,8 @@ import routers.user.user_crud as user_crud
 from core.database import get_db
 from core.models import models
 from core.schemas import user
-from routers.user.user_crud import pwd_context
 from dependencies import get_current_user
+from routers.user.user_crud import pwd_context
 
 config = Config('.env')
 SQLALCHEMY_DATABASE_URL = config('SQLALCHEMY_DATABASE_URL')
