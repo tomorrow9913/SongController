@@ -1,9 +1,10 @@
 from starlette import status
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from core.database import get_db
 from core.schemas import playlist_info
 from routers.playlist import playlist_crud
+from routers.user import user_crud
 from dependencies import get_current_user
 from core.models import models
 
@@ -12,10 +13,8 @@ router = APIRouter(
     tags=["playlist"],
 )
 
-fake_sample_Id = 123
 
-
-# Playlist
+# Playlist_info
 # Create
 @router.post("/", status_code=status.HTTP_204_NO_CONTENT)
 async def create_playlist(_playlist_create: playlist_info.PlaylistInfoCreate,
@@ -30,7 +29,7 @@ async def read_playlist_list(page: int = 0,
                              size: int = 10,
                              db=Depends(get_db),
                              search: str = ''):
-    total, _playlist_list = playlist_crud.get_playlist_list(db, skip=page*size, limit=size, keyword=search)
+    total, _playlist_list = playlist_crud.get_playlist_list(db, skip=page * size, limit=size, keyword=search)
     return {"total": total, "playlist_list": _playlist_list}
 
 
@@ -47,12 +46,34 @@ async def read_playlist(playlist_id: str, db=Depends(get_db)):
 
 
 # Update
-@router.put("/{playlist_id}")
-async def update_playlist(playlist_id: str):
-    return {"message": f"Update playlistId {playlist_id}"}
+@router.put("/{playlist_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_playlist(_update_playlist: playlist_info.PlaylistUpdate,
+                          db=Depends(get_db),
+                          current_user: models.User = Depends(get_current_user)):
+    db_playlist = playlist_crud.get_playlist(playlist_id=_update_playlist.playlist_id, db=db)
+
+    if not db_playlist:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="데이터를 찾을수 없습니다.")
+    if db_playlist.owner != current_user.id and current_user.authority != 0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="수정 권한이 없습니다.")
+
+    playlist_crud.update_playlist(db, db_playlist, _update_playlist)
 
 
 # Delete
-@router.delete("/{playlist_id}")
-async def delete_playlist(playlist_id: str):
-    return {"message": f"Delete playlistId {playlist_id} "}
+@router.delete("/{playlist_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_playlist(playlist_id: str, current_user: models.User = Depends(get_current_user), db=Depends(get_db)):
+    db_playlist = playlist_crud.get_playlist(playlist_id=int(playlist_id), db=db)
+    
+    if not db_playlist:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="데이터를 찾을수 없습니다.")
+    if db_playlist.owner != current_user.id and current_user.authority != 0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="삭제 권한이 없습니다.")
+
+    playlist_crud.delete_playlist(db, playlist_id=int(playlist_id))
+
+# !Playlist_info

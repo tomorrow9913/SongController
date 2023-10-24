@@ -35,3 +35,6 @@ class PlaylistDelete(BaseModel):
     playlist_id: int
 
 
+class PlaylistSongCreate:
+    playlist_id: int
+    song_id: int
