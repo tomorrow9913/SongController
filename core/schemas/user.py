@@ -12,7 +12,7 @@ class User(BaseModel):
     class Token(BaseModel):
         access_token: str
         token_type: str
-        username: str
+        student_id: str
 
 
 class UserInformation(BaseModel):

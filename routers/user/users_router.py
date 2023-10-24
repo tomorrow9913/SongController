@@ -138,5 +138,5 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "username": user_data.stdId
+        "student_id": user_data.stdId
     }
