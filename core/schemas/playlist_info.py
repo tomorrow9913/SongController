@@ -5,19 +5,17 @@ from pydantic import BaseModel, field_validator
 
 class PlayListInfo(BaseModel):
     id: int
-    owner: str
+    owner: int
     title: str
     description: str
     create_time: datetime
-    hide: int = 0
 
 
 class PlaylistInfoCreate(BaseModel):
-    owner: str
     title: str
     description: str
 
-    @field_validator('owner', 'title', 'description')
+    @field_validator('title', 'description')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')
