@@ -20,15 +20,16 @@ def create_user(db: Session, user_create: UserCreate):
 
 
 def get_existing_user(db: Session, user_create: UserCreate):
-    return db.query(User).filter(User.stdId == user_create.stdId).first()
+    _db_user = db.query(User).filter(User.stdId == user_create.stdId, User.hide == 0).first()
+    return
 
 
 def get_user(db: Session, student_id: str):
-    return db.query(User).filter(User.stdId == student_id).first()
+    return db.query(User).filter(User.stdId == student_id, User.hide == 0).first()
 
 
 def get_user_list(db: Session, skip: int = 0, limit: int = 10, keyword: str = ''):
-    _user_list = db.query(User).order_by(User.stdId.desc())
+    _user_list = db.query(User).filter(User.hide == 0).order_by(User.stdId.desc())
     if keyword:
         search = '%%{}%%'.format(keyword)
         _user_list = _user_list.filter(User.name.ilike(search) | User.stdId.ilike(search))
